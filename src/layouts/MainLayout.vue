@@ -36,10 +36,25 @@
       <q-list>
         <q-item-label
           header
-          class="text-grey-8"
-        >
+          class="text-grey-8" >
           Menu
         </q-item-label>
+        <q-item>
+          <q-item-section avatar>
+            <q-avatar  color="primary" text-color="white">
+              <!-- {{ userDetails.name[0].toUpperCase() }} -->
+              P
+            </q-avatar>
+          </q-item-section>
+
+          <q-item-section>
+            <q-item-label lines="1">
+              <span v-if="userDetails.name">Hello, {{ userDetails.name.split(" ")[0] }}!</span>
+              <!-- Hello, Pepe! -->
+            </q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-separator class="q-mb-md" inset="item" />
         <EssentialLink
           v-for="link in menuLinks"
           :key="link.title"
@@ -55,10 +70,12 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import EssentialLink from 'components/EssentialLink'
 
 export default {
   computed: {
+    ...mapState('store', ['userDetails']),
     title() {
       let currentPath = this.$route.fullPath
       if (currentPath == '/login') return 'Login'

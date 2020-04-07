@@ -1,7 +1,6 @@
 <template>
 	<q-page class="flex">
-		
-		<q-list class="full-width">
+		<q-list class="full-width" v-if="userDetails.userId">
 			<q-scroll-area style="height: 100%;" class="full-width">
 				<q-item-label header>Open</q-item-label>
 				<q-item
@@ -9,7 +8,7 @@
 		      		class="q-my-sm"
 		      		clickable
 		      		v-ripple
-		      		:to="{ path: 'owing/' + owe.id }"
+		      		:to="{ path: `owing/${owe.id}` }"
 		      		v-if="openOwe.length > 0">
 	      			<q-item-section avatar>
 		          		<q-avatar color="primary" text-color="white">
@@ -45,7 +44,7 @@
 		      		class="q-mb-sm"
 		      		clickable
 		      		v-ripple
-		      		:to="{ path: 'owing/' + owe.id }"
+		      		:to="{ path: `owing/${owe.id}` }"
 		      		v-if="closedOwe.length > 0">
 		        	<q-item-section avatar>
 			        	<q-avatar color="primary" text-color="white">
@@ -73,42 +72,46 @@
 		      	</p>
 		    </q-scroll-area>
 	    </q-list>
-		
 			
 
 	    <q-dialog
 	    	v-model="prompt"
-	    	persistent>
-	      <q-card style="min-width: 350px">
-	        <q-card-section>
-	          <div class="text-h6">New owing</div>
-	        </q-card-section>
+	    	persistent >
+	    	<q-card style="min-width: 350px">
+        		<q-card-section>
+          			<div class="text-h6">New owing</div>
+        		</q-card-section>
+        		<q-form @submit="createOwing">
+	        		<q-card-section class="q-pt-none">
+	          			<q-input
+				          	v-model="name"
+				          	label="Name"
+				          	:rules="[val => !!val || 'Field is required']" />
+	          			<q-input
+					        v-model="amount"
+					        mask="#.##"
+					        placeholder="100.00"
+					        reverse-fill-mask
+					        prefix="$ "
+					        input-class="text-right"
+					        :rules="[val => !!val || 'Field is required', val => val > 0 || 'Amount must be greater than 0']" />
+	          			<q-input
+				          	v-model="description"
+				          	label="Description"
+				          	:rules="[val => !!val || 'Field is required']" />
+	        		</q-card-section>
 
-	        <q-card-section class="q-pt-none">
-	          <q-input class="q-mb-md"
-	          	v-model="name"
-	          	placeholder="Name"/>
-	          <q-input
-	          	class="q-mb-md"
-	          	v-model="amount"
-	          	placeholder="500.00"
-	          	type="number"
-		        />
-	          <q-input
-	          	v-model="description"
-	          	class="q-mb-md"
-	          	placeholder="Description"/>
-	        </q-card-section>
-
-	        <q-card-actions align="right" class="text-primary">
-	          <q-btn flat label="Cancel" @click="closePrompt" />
-	          <q-btn flat label="Create" @click="createOwing"/>
-	        </q-card-actions>
-	      </q-card>
+	        		<q-card-actions align="right" class="text-primary">
+	          			<q-btn flat label="Cancel" @click="closePrompt" />
+	          			<q-btn flat label="Create" type="submit"/>
+	        		</q-card-actions>
+    			</q-form>
+	      	</q-card>
 	    </q-dialog>
 	    <q-page-sticky position="bottom-right" :offset="[18, 18]">
             <q-btn fab icon="add" color="primary" @click="prompt = true" />
         </q-page-sticky>
+
 	</q-page>
 </template>
 
@@ -151,16 +154,21 @@
 			},
 			getData() {
 				let data = []
-				firebaseDb.ref('users/' + firebaseAuth.currentUser.uid).once('value', snapshot => {
-						let data = []
-						let el = {}
-						for (let item in snapshot.val().owesMe) {
-							el = snapshot.val().owesMe[item]
-							el.id = item
-							data.push(el)
-						}
-						this.owes = data
-				})
+				try {
+					firebaseDb.ref('users/' + firebaseAuth.currentUser.uid).once('value', snapshot => {
+							let data = []
+							let el = {}
+							for (let item in snapshot.val().owesMe) {
+								el = snapshot.val().owesMe[item]
+								el.id = item
+								data.push(el)
+							}
+							this.owes = data
+					})
+				} catch (err) {
+					console.log(err)
+				}
+					
 			},
 			createOwing() {
 				let postOwing = {
@@ -189,3 +197,5 @@
 		}
 	}
 </script>
+
+<!-- :rules="[val => !!val || 'Field is required', val => val > 0 || 'Amount must be greater than 0']" -->

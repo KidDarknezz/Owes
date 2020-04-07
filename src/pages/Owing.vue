@@ -40,7 +40,7 @@
 	      		v-ripple
 	      		active="active"
 	      		v-for="payment in owing.payments"
-	      		@click="confirm = true; deletePaymentId = payment.id">
+	      		@click="confirmPaymentDelete = true; deletePaymentId = payment.id">
 	        	<q-item-section class="text-black">{{ payment.amount | toCurrency }}</q-item-section>
 	        	<q-item-section side>{{ payment.date }}</q-item-section>
 	      	</q-item>
@@ -61,7 +61,7 @@
 	        direction="up">
 	        <!-- <q-fab-action v-if="owing.status === 'open'" label-class="bg-grey-3 text-grey-8" external-label color="teal" icon="done" label="Close owing" label-position="left" @click="editOwingStatus('closed')" /> -->
 	        <q-fab-action v-if="owing.status === 'open'" label-class="bg-grey-3 text-grey-8" external-label color="primary" icon="add" label="Add payment" label-position="left" @click="prompt = true" />
-	        <q-fab-action label-class="bg-grey-3 text-grey-8" external-label color="deep-orange" icon="delete" label="Delete owing" label-position="left" @click="deleteOwing" />
+	        <q-fab-action label-class="bg-grey-3 text-grey-8" external-label color="deep-orange" icon="delete" label="Delete owing" label-position="left" @click="confirmOwingDelete = true" />
       		</q-fab>
         </q-page-sticky>
         <q-dialog
@@ -71,25 +71,33 @@
 	        <q-card-section>
 	          <div class="text-h6">Add payment</div>
 	        </q-card-section>
+	        <q-form @submit="createPayment">
+		        <q-card-section class="q-pt-none">
+		          <!-- <q-input
+		          	v-model="amount"
+		          	placeholder="500.00"
+		          	type="number"
+			        :rules="[val => !!val || 'Field is required', val => val > 0 || 'Amount must be greater than 0']" /> -->
+			        <q-input
+				        v-model="amount"
+				        mask="#.##"
+				        placeholder="100.00"
+				        reverse-fill-mask
+				        prefix="$ "
+				        input-class="text-right"
+				        :rules="[val => !!val || 'Field is required', val => val > 0 || 'Amount must be greater than 0']" />
+			        <q-date v-model="date" class="full-width q-mt-md" />
+		        </q-card-section>
 
-	        <q-card-section class="q-pt-none">
-	          <q-input
-	          	class="q-mb-md"
-	          	v-model="amount"
-	          	placeholder="500.00"
-	          	type="number"
-		        />
-		        <q-date v-model="date" class="full-width" />
-	        </q-card-section>
-
-	        <q-card-actions align="right" class="text-primary">
-	          <q-btn flat label="Cancel" @click="closePrompt" />
-	          <q-btn flat label="Create" @click="createPayment"/>
-	        </q-card-actions>
+		        <q-card-actions align="right" class="text-primary">
+		          <q-btn flat label="Cancel" @click="closePrompt" />
+		          <q-btn flat label="Create" type="submit"/>
+		        </q-card-actions>
+	    	</q-form>
 	      </q-card>
 	    </q-dialog>
 
-		<q-dialog v-model="confirm" persistent>
+		<q-dialog v-model="confirmPaymentDelete" persistent>
 	    	<q-card>
 	        	<q-card-section class="row items-center">
 	          		<span class="q-ml-sm">Are you sure you want to delete this payment?</span>
@@ -97,6 +105,18 @@
 	        	<q-card-actions align="right">
 	         		<q-btn flat label="Cancel" color="primary" v-close-popup />
 	          		<q-btn flat label="Delete" color="primary" @click="deletePayment"/>
+	        	</q-card-actions>
+	      	</q-card>
+	    </q-dialog>
+
+	    <q-dialog v-model="confirmOwingDelete" persistent>
+	    	<q-card>
+	        	<q-card-section class="row items-center">
+	          		<span class="q-ml-sm">Are you sure you want to delete this owing?</span>
+	        	</q-card-section>
+	        	<q-card-actions align="right">
+	         		<q-btn flat label="Cancel" color="primary" v-close-popup />
+	          		<q-btn flat label="Delete" color="primary" @click="deleteOwing"/>
 	        	</q-card-actions>
 	      	</q-card>
 	    </q-dialog>
@@ -133,7 +153,8 @@
 				amount: '',
 				date: this.generateDate(),
 				prompt: false,
-				confirm: false,
+				confirmPaymentDelete: false,
+				confirmOwingDelete: false,
 				alert: false,
 				deletePaymentId: ''
 			}
@@ -189,7 +210,7 @@
 				firebaseDb.ref('users/' + firebaseAuth.currentUser.uid + '/owesMe/' + this.$route.params.id + '/payments/' + this.deletePaymentId).remove()
 				.then(response => {
 					this.getData()
-					this.confirm = false
+					this.confirmPaymentDelete = false
 				})
 			},
 			owingShouldBeClosed(newPymnt) {

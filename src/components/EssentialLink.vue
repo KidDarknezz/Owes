@@ -2,6 +2,7 @@
   <q-item
     clickable
     tag="a"
+    v-ripple
     @click="logoutUser"
   >
     <q-item-section
