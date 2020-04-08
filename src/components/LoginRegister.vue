@@ -40,8 +40,8 @@
 			return {
 				formData: {
 					name: '',
-					email: '',
-					password: ''
+					email: 'test@test.com',
+					password: '123456789'
 				}
 			}
 		},
