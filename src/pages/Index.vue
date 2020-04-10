@@ -116,13 +116,12 @@
 </template>
 
 <script>
-	import { mapState } from 'vuex'
+	import { mapState, mapActions } from 'vuex'
 	import {  firebaseAuth, firebaseDb } from 'boot/firebase'
 
 	export default {
 		data () {
 		    return {
-		    	owes: [],
 		    	prompt: false,
       			name: '',
       			amount: '',
@@ -131,64 +130,41 @@
 		  },
 		computed: {
 			...mapState('store', ['userDetails']),
+			...mapState('owingStore', ['allOwings']),
 			openOwe() {
 				let open = []
-				for (let owe of this.owes) {
+				for (let owe of this.allOwings) {
 					if (owe.status === 'open') open.push(owe)
 				}
 			return open
 			},
 			closedOwe() {
 				let closed = []
-				for (let owe of this.owes)
+				for (let owe of this.allOwings)
 					if (owe.status === 'closed') closed.push(owe)
 			return closed
 			}
 		},
 		methods: {
+			...mapActions('owingStore', ['createNewOwing', 'getAllOwings']),
 			closePrompt() {
 				this.prompt = false
 				this.name = ''
 				this.amount = ''
 				this.description = ''
 			},
-			getData() {
-				let data = []
-				try {
-					firebaseDb.ref('users/' + firebaseAuth.currentUser.uid).once('value', snapshot => {
-							let data = []
-							let el = {}
-							for (let item in snapshot.val().owesMe) {
-								el = snapshot.val().owesMe[item]
-								el.id = item
-								data.push(el)
-							}
-							this.owes = data
-					})
-				} catch (err) {
-					console.log(err)
-				}
-					
-			},
 			createOwing() {
-				let postOwing = {
+				this.createNewOwing({
+					userId: firebaseAuth.currentUser.uid,
 					name: this.name,
 					amount: this.amount,
-					description: this.description,
-					status: 'open'
-				}
-				this.closePrompt()
-				fetch('https://owes-c686b.firebaseio.com/users/' + firebaseAuth.currentUser.uid + '/owesMe.json', {
-					method: 'post',
-					body: JSON.stringify(postOwing)
-				}).then(response => {
-					this.getData()
-					return response.json()
+					description: this.description
 				})
+				this.closePrompt()
 			}
 		},
 		beforeMount() {
-			this.getData()
+			this.getAllOwings()
 		},
 		filters: {
 			toCurrency: function (amount) {

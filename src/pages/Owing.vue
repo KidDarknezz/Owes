@@ -18,7 +18,7 @@
     	<!-- AMOUNT PAYED -->
     	<q-card class="q-ma-md">
       		<q-card-section class="bg-teal text-white text-center">
-        		<div class="text-h6">Amount payed: {{ totalPayed(owingData.payments) | toCurrency }}</div>
+        		<div class="text-h6">Amount payed: {{ totalPayed | toCurrency }}</div>
       		</q-card-section>
     	</q-card>
     	<!-- END AMOUNT PAYED -->
@@ -26,7 +26,7 @@
     	<!--STILL OWING -->
     	<q-card class="q-ma-md">
       		<q-card-section class="bg-deep-orange text-white text-center">
-        		<div class="text-h6">Still owing: {{ owingData.amount - totalPayed(owingData.payments) | toCurrency }}</div>
+        		<div class="text-h6">Still owing: {{ owingData.amount - totalPayed | toCurrency }}</div>
       		</q-card-section>
     	</q-card>
     	<!-- END STILL OWING -->
@@ -40,12 +40,12 @@
     		bordered
     		separator
     		class="q-ml-md q-mr-md q-mb-md"
-    		v-if="owingData.payments.length > 0">
+    		v-if="payments.length > 0">
 	      	<q-item
 	      		clickable
 	      		v-ripple
 	      		active="active"
-	      		v-for="payment in owingData.payments"
+	      		v-for="payment in payments"
 	      		@click="confirmPaymentDelete = true; deletePaymentId = payment.id">
 	        	<q-item-section class="text-black">
 	        		{{ payment.amount | toCurrency }}
@@ -182,38 +182,56 @@
 			}
 		},
 		computed: {
-			...mapState('owingStore', ['owingData'])
+			...mapState('owingStore', ['owingData']),
+			...mapState('paymentStore', ['payments']),
+			totalPayed() {
+				let total = 0
+				for (let payment of this.payments) {
+					total += parseFloat(payment.amount)
+				}
+				return total
+			}
 		},
 		methods: {
 			...mapActions('owingStore', [
 					'getOwingData',
-					'addNewPayment',
 					'editOwingStatus',
-					'deleteExistingOwing',
-					'deleteExistingPayment'
+					'deleteExistingOwing'
+				]),
+			...mapActions('paymentStore', [
+				'getPaymentsData',
+				'addNewPayment',
+				'deleteExistingPayment'
 				]),
 			createPayment() {
 				this.addNewPayment({
-					userId: firebaseAuth.currentUser.uid,
 					owingId: this.$route.params.id,
 					amount: this.amount,
 					date: this.date
 				})
+				if (this.totalPayed + parseFloat(this.amount) >= this.owingData.amount) {
+					this.updateStatus('closed')
+					this.alert = true
+				}
 				this.closePrompt()
 			},
 			deleteOwe() {
-				this.deleteExistingOwing({
-					userId: firebaseAuth.currentUser.uid,
-					owingId: this.$route.params.id
-				})
+				this.deleteExistingOwing(this.$route.params.id)
 			},
 			deletePayment() {
 				this.deleteExistingPayment({
-					userId: firebaseAuth.currentUser.uid,
 					owingId: this.$route.params.id,
 					paymentId: this.deletePaymentId
 				})
+				if (this.totalPayed < this.owingData.amount) 
+					this.updateStatus('open')
 				this.confirmPaymentDelete = false
+			},
+			updateStatus(status) {
+				this.editOwingStatus({
+					owingId: this.$route.params.id,
+					status: status
+				})
 			},
 			closePrompt() {
 				this.prompt = false
@@ -227,20 +245,11 @@
 				if (mm < 10) mm = `0${mm}`
 				if (dd < 10) dd = `0${dd}`
 				return `${yyyy}/${mm}/${dd}`
-			},
-			totalPayed(payments) {
-				let total = 0
-				for (let payment in payments) {
-					total += parseFloat(payments[payment].amount)
-				}
-				return total
 			}
 		},
 		beforeMount() {
-			this.getOwingData({
-				userId: firebaseAuth.currentUser.uid,
-				owingId: this.$route.params.id
-			})
+			this.getOwingData(this.$route.params.id)
+			this.getPaymentsData(this.$route.params.id)
 		},
 		filters: {
 			toCurrency: function (amount) {

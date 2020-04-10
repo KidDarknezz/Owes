@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 
 import store from './store'
 import owingStore from './owingStore'
+import paymentStore from './paymentStore'
 
 Vue.use(Vuex)
 
@@ -19,7 +20,8 @@ export default function (/* { ssrContext } */) {
   const Store = new Vuex.Store({
     modules: {
       store,
-      owingStore
+      owingStore,
+      paymentStore
     },
 
     // enable strict mode (adds overhead!)
