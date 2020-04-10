@@ -1,55 +1,69 @@
 <template>
 	<q-page>
-		
+		<!-- OWING INFO -->
 		<q-card class="q-ma-md">
       		<q-card-section class="bg-primary text-white text-center">
-        		<div class="text-h6">Total amount: {{ owing.amount | toCurrency }}</div>
+        		<div class="text-h6">Total amount: {{ owingData.amount | toCurrency }}</div>
       		</q-card-section>
       		<q-card-section>
-      			<div class="text-subtitle1 text-center"><strong>{{ owing.name }}</strong></div>
-      			<q-chip :color="owing.status === 'open' ? 'teal' : 'deep-orange'" text-color="white" :icon="owing.status === 'open' ? 'attach_money' : 'money_off'">
-        			{{ owing.status }}
+      			<div class="text-subtitle1 text-center"><strong>{{ owingData.name }}</strong></div>
+      			<q-chip :color="owingData.status === 'open' ? 'teal' : 'deep-orange'" text-color="white" :icon="owingData.status === 'open' ? 'attach_money' : 'money_off'">
+        			{{ owingData.status }}
       			</q-chip>
-      			{{ owing.description }}
+      			{{ owingData.description }}
       		</q-card-section>
     	</q-card>
+    	<!-- END OWING INFO -->
 
+    	<!-- AMOUNT PAYED -->
     	<q-card class="q-ma-md">
       		<q-card-section class="bg-teal text-white text-center">
-        		<div class="text-h6">Amount payed: {{ totalPayed(owing.payments) | toCurrency }}</div>
+        		<div class="text-h6">Amount payed: {{ totalPayed | toCurrency }}</div>
       		</q-card-section>
     	</q-card>
+    	<!-- END AMOUNT PAYED -->
 
+    	<!--STILL OWING -->
     	<q-card class="q-ma-md">
       		<q-card-section class="bg-deep-orange text-white text-center">
-        		<div class="text-h6">Still owing: {{ owing.amount - totalPayed(owing.payments) | toCurrency }}</div>
+        		<div class="text-h6">Still owing: {{ owingData.amount - totalPayed | toCurrency }}</div>
       		</q-card-section>
     	</q-card>
+    	<!-- END STILL OWING -->
 
     	<q-separator />
 
 		<q-item-label header>Payments</q-item-label>
 
+		<!-- PAYMENTS LIST -->
     	<q-list
     		bordered
     		separator
-    		class="q-ml-md q-mr-md"
-    		v-if="owing.payments.length > 0">
+    		class="q-ml-md q-mr-md q-mb-md"
+    		v-if="payments.length > 0">
 	      	<q-item
 	      		clickable
 	      		v-ripple
 	      		active="active"
-	      		v-for="payment in owing.payments"
+	      		v-for="payment in payments"
 	      		@click="confirmPaymentDelete = true; deletePaymentId = payment.id">
-	        	<q-item-section class="text-black">{{ payment.amount | toCurrency }}</q-item-section>
+	        	<q-item-section class="text-black">
+	        		{{ payment.amount | toCurrency }}
+	        	</q-item-section>
 	        	<q-item-section side>{{ payment.date }}</q-item-section>
 	      	</q-item>
     	</q-list>
+    	<!-- END PAYMENTS LIST -->
+
+    	<!-- EMPTY PAYMENTS LIST PLACEHOLDER -->
     	<p
     		class="text-center text-grey-8 q-mt-md"
     		v-else>
     		There are no payments registered
     	</p>
+    	<!-- END EMPTY PAYMENTS LIST PLACEHOLDER -->
+
+    	<!-- FLOATING BUTTON -->
   		<q-page-sticky position="bottom-right" :offset="[18, 18]">
       		<q-fab
 	        label="Actions"
@@ -60,10 +74,13 @@
 	        icon="keyboard_arrow_up"
 	        direction="up">
 	        <!-- <q-fab-action v-if="owing.status === 'open'" label-class="bg-grey-3 text-grey-8" external-label color="teal" icon="done" label="Close owing" label-position="left" @click="editOwingStatus('closed')" /> -->
-	        <q-fab-action v-if="owing.status === 'open'" label-class="bg-grey-3 text-grey-8" external-label color="primary" icon="add" label="Add payment" label-position="left" @click="prompt = true" />
+	        <q-fab-action v-if="owingData.status === 'open'" label-class="bg-grey-3 text-grey-8" external-label color="primary" icon="add" label="Add payment" label-position="left" @click="prompt = true" />
 	        <q-fab-action label-class="bg-grey-3 text-grey-8" external-label color="deep-orange" icon="delete" label="Delete owing" label-position="left" @click="confirmOwingDelete = true" />
       		</q-fab>
         </q-page-sticky>
+        <!-- END FLOATING BUTTON -->
+
+        <!-- ADD NEW PAYMENT DIALOG -->
         <q-dialog
 	    	v-model="prompt"
 	    	persistent>
@@ -96,7 +113,9 @@
 	    	</q-form>
 	      </q-card>
 	    </q-dialog>
+	    <!-- END ADD NEW PAYMENT DIALOG -->
 
+	    <!-- CONFIRM PAYMENT DELETE -->
 		<q-dialog v-model="confirmPaymentDelete" persistent>
 	    	<q-card>
 	        	<q-card-section class="row items-center">
@@ -108,7 +127,9 @@
 	        	</q-card-actions>
 	      	</q-card>
 	    </q-dialog>
+	    <!-- END CONFIRM PAYMENT DELETE -->
 
+	    <!-- CONFIRM OWING DELETE -->
 	    <q-dialog v-model="confirmOwingDelete" persistent>
 	    	<q-card>
 	        	<q-card-section class="row items-center">
@@ -116,11 +137,13 @@
 	        	</q-card-section>
 	        	<q-card-actions align="right">
 	         		<q-btn flat label="Cancel" color="primary" v-close-popup />
-	          		<q-btn flat label="Delete" color="primary" @click="deleteOwing"/>
+	          		<q-btn flat label="Delete" color="primary" @click="deleteOwe"/>
 	        	</q-card-actions>
 	      	</q-card>
 	    </q-dialog>
+	    <!-- END CONFIRM OWING DELETE -->
 
+	    <!-- AUTO CLOSING OWING MESSAGE -->
 	    <q-dialog v-model="alert">
 	    	<q-card>
 	        	<q-card-section>
@@ -138,18 +161,17 @@
 	        	</q-card-actions>
 	      	</q-card>
 	    </q-dialog>
+	    <!-- END AUTO CLOSING MESSAGE -->
 	</q-page>
 </template>
 
 <script>
-	import {  firebaseAuth, firebaseDb } from 'boot/firebase'
+	import { mapState, mapActions } from 'vuex'
+	import {  firebaseAuth } from 'boot/firebase'
 
 	export default {
 		data() {
 			return {
-				owing: {
-					payments: []
-				},
 				amount: '',
 				date: this.generateDate(),
 				prompt: false,
@@ -159,73 +181,57 @@
 				deletePaymentId: ''
 			}
 		},
+		computed: {
+			...mapState('owingStore', ['owingData']),
+			...mapState('paymentStore', ['payments']),
+			totalPayed() {
+				let total = 0
+				for (let payment of this.payments) {
+					total += parseFloat(payment.amount)
+				}
+				return total
+			}
+		},
 		methods: {
-			getData() {
-				let payments = []
-				let el = {}
-				firebaseDb.ref('users/' + firebaseAuth.currentUser.uid + '/owesMe/' + this.$route.params.id).once('value', snapshot => {
-						this.owing = snapshot.val()
-						for (let pymnt in snapshot.val().payments) {
-							el = snapshot.val().payments[pymnt]
-							el.id = pymnt
-							payments.push(el)
-						}
-						this.owing.payments = payments
-						if (this.owing.status === 'closed')
-							this.owingShouldBeReOpened()
-				})
-			},
+			...mapActions('owingStore', [
+					'getOwingData',
+					'editOwingStatus',
+					'deleteExistingOwing'
+				]),
+			...mapActions('paymentStore', [
+				'getPaymentsData',
+				'addNewPayment',
+				'deleteExistingPayment'
+				]),
 			createPayment() {
-				let postPayment = {
+				this.addNewPayment({
+					owingId: this.$route.params.id,
 					amount: this.amount,
 					date: this.date
+				})
+				if (this.totalPayed + parseFloat(this.amount) >= this.owingData.amount) {
+					this.updateStatus('closed')
+					this.alert = true
 				}
 				this.closePrompt()
-				fetch(`https://owes-c686b.firebaseio.com/users/${firebaseAuth.currentUser.uid}/owesMe/${this.$route.params.id}/payments.json`, {
-					method: 'post',
-					body: JSON.stringify(postPayment)
-				}).then(response => {
-					this.getData()
-					this.owingShouldBeClosed(postPayment.amount)
-					return response.json()
-				})
 			},
-			editOwingStatus(status) {
-				firebaseDb.ref('users/' + firebaseAuth.currentUser.uid + '/owesMe/' + this.$route.params.id).update({
-					status: status,
-				}).then(response => {
-					this.getData()
-					return response
-				})
-			},
-			deleteOwing() {
-				fetch('https://owes-c686b.firebaseio.com/users/' + firebaseAuth.currentUser.uid + '/owesMe/' + this.$route.params.id + '.json', {
-					method: 'delete'
-				}).then(response => {
-					this.$router.replace('/')
-					return response.json
-				})
+			deleteOwe() {
+				this.deleteExistingOwing(this.$route.params.id)
 			},
 			deletePayment() {
-				firebaseDb.ref('users/' + firebaseAuth.currentUser.uid + '/owesMe/' + this.$route.params.id + '/payments/' + this.deletePaymentId).remove()
-				.then(response => {
-					this.getData()
-					this.confirmPaymentDelete = false
+				this.deleteExistingPayment({
+					owingId: this.$route.params.id,
+					paymentId: this.deletePaymentId
 				})
+				if (this.totalPayed < this.owingData.amount) 
+					this.updateStatus('open')
+				this.confirmPaymentDelete = false
 			},
-			owingShouldBeClosed(newPymnt) {
-				let totalPayed = this.totalPayed(this.owing.payments) + parseFloat(newPymnt)
-				if (totalPayed >= this.owing.amount) {
-					this.alert = true
-					this.editOwingStatus('closed')
-				}
-				
-			},
-			owingShouldBeReOpened() {
-				let totalPayed = this.totalPayed(this.owing.payments)
-				if (totalPayed < parseFloat(this.owing.amount)) {
-					this.editOwingStatus('open')
-				} 
+			updateStatus(status) {
+				this.editOwingStatus({
+					owingId: this.$route.params.id,
+					status: status
+				})
 			},
 			closePrompt() {
 				this.prompt = false
@@ -239,17 +245,11 @@
 				if (mm < 10) mm = `0${mm}`
 				if (dd < 10) dd = `0${dd}`
 				return `${yyyy}/${mm}/${dd}`
-			},
-			totalPayed(payments) {
-				let total = 0
-				for (let payment in payments) {
-					total += parseFloat(payments[payment].amount)
-				}
-				return total
 			}
 		},
 		beforeMount() {
-			this.getData()
+			this.getOwingData(this.$route.params.id)
+			this.getPaymentsData(this.$route.params.id)
 		},
 		filters: {
 			toCurrency: function (amount) {
