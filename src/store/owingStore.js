@@ -58,7 +58,10 @@ const actions = {
 			status: 'open'
 		}
 		firebaseDb.ref(`owings/${firebaseAuth.currentUser.uid}`).push(owing)
-		commit('setNewOwing', owing)
+			.then(response => {
+				owing.id = response.key
+				commit('setNewOwing', owing)
+			})
 	},
 	editOwingStatus({ commit }, payload) {
 		firebaseDb.ref(`owings/${firebaseAuth.currentUser.uid}/${payload.owingId}`).update({
