@@ -18,9 +18,13 @@
 		outlined
 		type="password"
 		v-model="formData.password"
-		class="q-mb-md"
 		label="Password"
 		:rules ="[value => value.length >= 8 || 'Field must contain at least 8 characters']" />
+		<q-banner
+		class="text-white bg-red q-mb-md"
+		v-if="errMsg">
+			{{ errMsgContent }}
+	    </q-banner>
 		<div class="row">
 			<q-space />
 			<q-btn
@@ -40,9 +44,11 @@
 			return {
 				formData: {
 					name: '',
-					email: 'test@test.com',
+					email: 'test2@test.com',
 					password: '123456789'
-				}
+				},
+				errMsg: true,
+				errMsgContent: 'You have lost connection to the internet. This app is offline.'
 			}
 		},
 		methods: {
