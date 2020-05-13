@@ -1,10 +1,11 @@
 // Firebase App (the core Firebase SDK) is always required and
 // must be listed before other Firebase SDKs
-var firebase = require("firebase/app");
+var firebase = require("firebase/app")
 
 // Add the Firebase products that you want to use
-require("firebase/auth");
-require("firebase/database");
+require("firebase/auth")
+require("firebase/database")
+require("firebase/storage")
 
 // Your web app's Firebase configuration
 var firebaseConfig = {
@@ -18,8 +19,9 @@ var firebaseConfig = {
 	measurementId: "G-E6SNZR52WJ"
 };
 // Initialize Firebase
-let firebaseApp = firebase.initializeApp(firebaseConfig);
+let firebaseApp = firebase.initializeApp(firebaseConfig)
 let firebaseAuth = firebaseApp.auth()
 let firebaseDb = firebaseApp.database()
+let firebaseStorage = firebaseApp.storage()
 
-export { firebaseAuth, firebaseDb }
+export { firebaseAuth, firebaseDb, firebaseStorage }

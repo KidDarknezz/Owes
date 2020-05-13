@@ -1,4 +1,4 @@
-import { firebaseAuth, firebaseDb } from 'boot/firebase'
+import { firebaseAuth, firebaseDb, firebaseStorage } from 'boot/firebase'
 
 const state = {
 	payments: []
@@ -32,6 +32,9 @@ const actions = {
 		})
 	},
 	addNewPayment({ commit }, payload) {
+		var storageRef = firebaseStorage.ref('proof-of-payments/' + payload.proofOfPayment.name)
+		storageRef.put(payload.proofOfPayment)
+
 		firebaseDb.ref(`payments/${firebaseAuth.currentUser.uid}/${payload.owingId}`).push({
 			amount: payload.amount,
 			date: payload.date

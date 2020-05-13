@@ -102,7 +102,15 @@
 				        reverse-fill-mask
 				        prefix="$ "
 				        input-class="text-right"
-				        :rules="[val => !!val || 'Field is required', val => val > 0 || 'Amount must be greater than 0']" />
+				        :rules="[val => !!val || 'Add payment amount', val => val > 0 || 'Amount must be greater than 0']" />
+				    <q-file
+						outlined
+						v-model="proofOfPayment"
+						label="Proof of payment">
+						<template v-slot:prepend>
+							<q-icon name="attach_file" />
+						</template>
+					</q-file>
 			        <q-date v-model="date" class="full-width q-mt-md" />
 		        </q-card-section>
 
@@ -178,7 +186,8 @@
 				confirmPaymentDelete: false,
 				confirmOwingDelete: false,
 				alert: false,
-				deletePaymentId: ''
+				deletePaymentId: '',
+				proofOfPayment: null
 			}
 		},
 		computed: {
@@ -207,7 +216,8 @@
 				this.addNewPayment({
 					owingId: this.$route.params.id,
 					amount: this.amount,
-					date: this.date
+					date: this.date,
+					proofOfPayment: this.proofOfPayment
 				})
 				if (this.totalPayed + parseFloat(this.amount) >= this.owingData.amount) {
 					this.updateStatus('closed')
