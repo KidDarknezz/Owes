@@ -32,12 +32,14 @@ const actions = {
 		})
 	},
 	addNewPayment({ commit }, payload) {
-		var storageRef = firebaseStorage.ref('proof-of-payments/' + payload.proofOfPayment.name)
-		storageRef.put(payload.proofOfPayment)
+		firebaseStorage.ref(`proof-of-payments/${firebaseAuth.currentUser.uid}/${payload.owingId}/${payload.proofOfPayment.name}`).put(payload.proofOfPayment).then(snapshot => {
+			console.log('File uploaded!');
+		});
 
 		firebaseDb.ref(`payments/${firebaseAuth.currentUser.uid}/${payload.owingId}`).push({
 			amount: payload.amount,
-			date: payload.date
+			date: payload.date,
+			pop: payload.proofOfPayment.name
 		}).then(response => {
 			commit('setNewPayment', {
 				amount: payload.amount,

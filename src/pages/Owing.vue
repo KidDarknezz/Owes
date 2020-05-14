@@ -46,7 +46,7 @@
 	      		v-ripple
 	      		active="active"
 	      		v-for="payment in payments"
-	      		@click="confirmPaymentDelete = true; deletePaymentId = payment.id">
+				@click="paymentMenu = true; deletePaymentId = payment.id">
 	        	<q-item-section class="text-black">
 	        		{{ payment.amount | toCurrency }}
 	        	</q-item-section>
@@ -84,43 +84,37 @@
         <q-dialog
 	    	v-model="prompt"
 	    	persistent>
-	      <q-card style="min-width: 350px">
-	        <q-card-section>
-	          <div class="text-h6">Add payment</div>
-	        </q-card-section>
-	        <q-form @submit="createPayment">
-		        <q-card-section class="q-pt-none">
-		          <!-- <q-input
-		          	v-model="amount"
-		          	placeholder="500.00"
-		          	type="number"
-			        :rules="[val => !!val || 'Field is required', val => val > 0 || 'Amount must be greater than 0']" /> -->
-			        <q-input
-				        v-model="amount"
-				        mask="#.##"
-				        placeholder="100.00"
-				        reverse-fill-mask
-				        prefix="$ "
-				        input-class="text-right"
-				        :rules="[val => !!val || 'Add payment amount', val => val > 0 || 'Amount must be greater than 0']" />
-				    <q-file
-						outlined
-						v-model="proofOfPayment"
-						label="Proof of payment">
-						<template v-slot:prepend>
-							<q-icon name="attach_file" />
-						</template>
-					</q-file>
-			        <q-date v-model="date" class="full-width q-mt-md" />
-		        </q-card-section>
-
-		        <q-card-actions align="right" class="text-primary">
-		          <q-btn flat label="Cancel" @click="closePrompt" />
-		          <q-btn flat label="Create" type="submit"/>
-		        </q-card-actions>
-	    	</q-form>
-	      </q-card>
-	    </q-dialog>
+			<q-card style="min-width: 350px">
+				<q-card-section>
+					<div class="text-h6">Add payment</div>
+				</q-card-section>
+				<q-form @submit="createPayment">
+					<q-card-section class="q-pt-none">
+						<q-input
+					        v-model="amount"
+					        mask="#.##"
+					        placeholder="100.00"
+					        reverse-fill-mask
+					        prefix="$ "
+					        input-class="text-right"
+					        :rules="[val => !!val || 'Add payment amount', val => val > 0 || 'Amount must be greater than 0']" />
+						<q-file
+							outlined
+							v-model="proofOfPayment"
+							label="Proof of payment">
+							<template v-slot:prepend>
+								<q-icon name="attach_file" />
+							</template>
+						</q-file>
+						<q-date v-model="date" class="full-width q-mt-md" />
+					</q-card-section>
+					<q-card-actions align="right" class="text-primary">
+						<q-btn flat label="Cancel" @click="closePrompt" />
+						<q-btn flat label="Create" type="submit"/>
+					</q-card-actions>
+				</q-form>
+			</q-card>
+		</q-dialog>
 	    <!-- END ADD NEW PAYMENT DIALOG -->
 
 	    <!-- CONFIRM PAYMENT DELETE -->
@@ -150,6 +144,19 @@
 	      	</q-card>
 	    </q-dialog>
 	    <!-- END CONFIRM OWING DELETE -->
+
+	    <!-- PAYMENT MENU DIALOG -->
+	    <q-dialog v-model="paymentMenu" position="bottom">
+			<q-card style="width: 350px">
+				<q-card-section class="row items-center q-pa-none">
+					<q-btn-group class="full-width" style="height: 60px;" spread>
+						<q-btn color="teal" label="Proof of Payment" icon="visibility" />
+						<q-btn color="deep-orange" label="Delete" icon="delete" @click="paymentMenu = false; confirmPaymentDelete = true"/>
+					</q-btn-group>
+				</q-card-section>
+			</q-card>
+		</q-dialog>
+	    <!-- END PAYMENT MENU DIALOG -->
 
 	    <!-- AUTO CLOSING OWING MESSAGE -->
 	    <q-dialog v-model="alert">
@@ -186,6 +193,7 @@
 				confirmPaymentDelete: false,
 				confirmOwingDelete: false,
 				alert: false,
+				paymentMenu: false,
 				deletePaymentId: '',
 				proofOfPayment: null
 			}
@@ -246,6 +254,7 @@
 			closePrompt() {
 				this.prompt = false
 				this.amount = ''
+				this.proofOfPayment = null
 			},
 			generateDate() {
 				let today = new Date()
